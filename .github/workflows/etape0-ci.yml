@@ -1,0 +1,26 @@
+name: etape0-ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Recuperer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+
+      - name: Installer les dependances
+        run: pip install -r app/requirements.txt pytest
+
+      - name: TESTER
+        run: pytest -q app/tests
+
+      - name: CONSTRUIRE l'image
+        run: docker build -f docker/Dockerfile -t flask-demo:${{ github.sha }} .
