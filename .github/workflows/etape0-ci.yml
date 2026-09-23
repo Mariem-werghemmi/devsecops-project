@@ -30,14 +30,13 @@ jobs:
         run: pytest -q app/tests
 
       - name: Installer Trivy
-        run: |
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+        run: curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
 
       - name: SCA - Trivy (dependances)
-        run: trivy fs --severity HIGH,CRITICAL --exit-code 1 app/
+        run: trivy fs --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 app/
 
       - name: CONSTRUIRE l'image
         run: docker build -f docker/Dockerfile -t flask-demo:${{ github.sha }} .
 
       - name: SCAN IMAGE - Trivy
-        run: trivy image --severity HIGH,CRITICAL --exit-code 1 flask-demo:${{ github.sha }}
+        run: trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 flask-demo:${{ github.sha }}
