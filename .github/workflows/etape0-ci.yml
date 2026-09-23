@@ -12,7 +12,7 @@ jobs:
       - name: Recuperer le code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # necessaire pour scanner tout l'historique, pas juste le dernier commit
+          fetch-depth: 0
 
       - name: SECRETS - Gitleaks
         uses: gitleaks/gitleaks-action@v2
@@ -29,5 +29,20 @@ jobs:
       - name: TESTER
         run: pytest -q app/tests
 
+      - name: SCA - Trivy (dependances)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: app/
+          severity: HIGH,CRITICAL
+          exit-code: 1
+
       - name: CONSTRUIRE l'image
         run: docker build -f docker/Dockerfile -t flask-demo:${{ github.sha }} .
+
+      - name: SCAN IMAGE - Trivy
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: flask-demo:${{ github.sha }}
+          severity: HIGH,CRITICAL
+          exit-code: 1
