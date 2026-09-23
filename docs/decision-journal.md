@@ -21,3 +21,23 @@ fait exactement son travail.
 **Commits liés :**
 - Rouge (test cassé) : `<HASH_ROUGE>`
 - Vert (correction) : `<HASH_VERT>`
+## Exercice casser/réparer — Gitleaks — 2026-09-23
+
+**Cassé :** commité une fausse clé AWS (`AKIAX7Q3M9F2K4J8P1RS`) dans
+`app/config_debug.py`.
+
+**Pourquoi le pipeline l'a bloqué :** Gitleaks scanne l'historique Git
+complet à chaque push (grâce à `fetch-depth: 0`). Il a détecté le
+pattern d'une clé AWS (règle `aws-access-token`, entropie 4.12) et
+fait échouer le job avant même l'installation de Python — c'est le
+shift-left : bloquer le plus tôt possible dans le pipeline.
+
+**Ce que ça m'a appris :** `git rm` seul ne suffit pas — le secret
+reste dans l'historique. Il faut réécrire l'historique
+(`git reset --soft` + recommit) et forcer le push. En situation
+réelle, la vraie protection est de révoquer/régénérer la clé
+immédiatement, pas seulement de nettoyer l'historique.
+
+**Commits liés :**
+- Secret commité : `e6e65e7`
+- Nettoyage : <colle le hash du commit de correction>
